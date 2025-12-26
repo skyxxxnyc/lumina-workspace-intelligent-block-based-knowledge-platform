@@ -3,13 +3,26 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
-export type BlockType = 'text' | 'h1' | 'h2' | 'h3' | 'todo' | 'bullet' | 'divider';
+export type BlockType = 
+  | 'text' 
+  | 'h1' 
+  | 'h2' 
+  | 'h3' 
+  | 'todo' 
+  | 'bullet' 
+  | 'divider' 
+  | 'image' 
+  | 'callout';
 export interface Block {
   id: string;
   type: BlockType;
   content: string;
   metadata?: {
     checked?: boolean;
+    icon?: string;
+    src?: string;
+    alt?: string;
+    caption?: string;
   };
 }
 export interface Page {
