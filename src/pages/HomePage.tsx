@@ -103,10 +103,10 @@ export function HomePage() {
         key={pageId}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.2 }}
         className="min-h-full bg-background"
       >
-        <div className="group/header relative h-[25vh] md:h-[30vh] w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+        <div className="group/header relative h-[22vh] md:h-[28vh] w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden border-b border-zinc-200/50 dark:border-zinc-800/50">
           {page.cover ? (
             <img src={page.cover} className="w-full h-full object-cover" alt="cover" />
           ) : (
@@ -114,7 +114,7 @@ export function HomePage() {
               <Button
                 variant="secondary"
                 size="sm"
-                className="bg-white/40 dark:bg-zinc-800/40 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-glass"
+                className="bg-white/60 dark:bg-zinc-800/60 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-glass"
                 onClick={addRandomCover}
               >
                 <ImageIcon className="mr-2 size-4" /> Add cover
@@ -160,12 +160,12 @@ export function HomePage() {
             </Popover>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 md:-mt-20 relative z-10">
-          <div className="py-8 md:py-10 lg:py-12">
-            <div className="group/title-section mb-10 max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto px-6 md:px-10 lg:px-12 -mt-16 md:-mt-20 relative z-10">
+          <div className="py-6 md:py-8 lg:py-10">
+            <div className="group/title-section mb-10">
               <div className="relative inline-block mb-6">
                 <div
-                  className="size-24 md:size-32 rounded-3xl bg-white dark:bg-zinc-950 shadow-2xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-5xl md:text-6xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all hover:scale-105"
+                  className="size-24 md:size-32 rounded-[2rem] bg-white dark:bg-zinc-950 shadow-2xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-5xl md:text-6xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all hover:scale-105 active:scale-95"
                   onClick={setRandomIcon}
                 >
                   {page.icon || "📄"}
@@ -173,13 +173,13 @@ export function HomePage() {
               </div>
               <input
                 type="text"
-                className="w-full text-4xl md:text-5xl font-bold bg-transparent border-none focus:ring-0 p-0 placeholder:text-zinc-200 dark:placeholder:text-zinc-800 outline-none leading-tight"
+                className="w-full text-4xl md:text-5xl font-extrabold bg-transparent border-none focus:ring-0 p-0 placeholder:text-zinc-200 dark:placeholder:text-zinc-800 outline-none leading-tight text-foreground tracking-tight"
                 value={page.title}
                 onChange={handleTitleChange}
                 placeholder="Untitled"
               />
             </div>
-            <div className="max-w-4xl mx-auto pb-32">
+            <div className="pb-32">
               {page.type === 'database' ? (
                 <DatabaseEditor database={page} onUpdate={updatePage.mutate} />
               ) : (

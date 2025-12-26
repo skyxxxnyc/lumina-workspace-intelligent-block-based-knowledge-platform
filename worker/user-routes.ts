@@ -18,6 +18,27 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const tree = await PageEntity.getTree(c.env);
     return ok(c, tree);
   });
+  app.get('/api/search', async (c) => {
+    const { items } = await PageEntity.list(c.env);
+    const searchData = items
+      .filter(p => !p.deletedAt)
+      .map(p => ({
+        id: p.id,
+        title: p.title,
+        type: p.type,
+        icon: p.icon,
+        parentId: p.parentId
+      }));
+    return ok(c, searchData);
+  });
+  app.get('/api/public/pages/:id', async (c) => {
+    const id = c.req.param('id');
+    const page = new PageEntity(c.env, id);
+    if (!await page.exists()) return notFound(c, 'Page not found');
+    const state = await page.getState();
+    if (!state.isPublic || state.deletedAt) return bad(c, 'This page is not public');
+    return ok(c, state);
+  });
   app.get('/api/trash', async (c) => {
     const trash = await PageEntity.getTrash(c.env);
     return ok(c, trash);
@@ -60,7 +81,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       propertiesSchema: body.propertiesSchema || (type === 'database' ? [{ id: 'p1', name: 'Status', type: 'select', options: [] }] : undefined),
       views: body.views || (type === 'database' ? [{ id: 'v1', name: 'Table', type: 'table' }] : undefined),
       properties: body.properties || {},
-      isPublic: false,
+      isPublic: body.isPublic || false,
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
@@ -85,10 +106,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await page.softDelete();
     return ok(c, { success: true });
   });
-  app.post('/api/import', async (c) => {
-    return ok(c, { message: "Import successful (mocked)" });
-  });
-  app.post('/api/export', async (c) => {
-    return ok(c, { url: "#", message: "Export ready (mocked)" });
+  app.post('/api/bulk-import', async (c) => {
+    const { pages } = await c.req.json();
+    if (!Array.isArray(pages)) return bad(c, 'Invalid payload');
+    for (const p of pages) {
+      await PageEntity.create(c.env, p);
+    }
+    return ok(c, { imported: pages.length });
   });
 }

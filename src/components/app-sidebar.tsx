@@ -63,9 +63,17 @@ export function AppSidebar(): JSX.Element {
             </span>
           </div>
         </div>
-        <div className="relative">
+        <div className="relative cursor-pointer group" onClick={() => {
+          const event = new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true });
+          document.dispatchEvent(event);
+        }}>
           <Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
-          <SidebarInput placeholder="Search" className="pl-8 bg-zinc-100/50 dark:bg-zinc-900/50 border-none h-9 text-xs" />
+          <div className="pl-8 bg-zinc-100/50 dark:bg-zinc-900/50 border border-transparent group-hover:border-zinc-200 dark:group-hover:border-zinc-800 rounded-md h-9 flex items-center text-xs text-muted-foreground transition-all">
+            Search
+            <kbd className="ml-auto mr-2 pointer-events-none inline-flex h-4 select-none items-center gap-1 rounded border bg-background px-1 font-mono text-[9px] font-medium opacity-100">
+              <span className="text-2xs">⌘</span>K
+            </kbd>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
