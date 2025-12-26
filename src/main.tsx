@@ -13,11 +13,16 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
+import { PublicPage } from '@/pages/PublicPage'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60,
-      retry: 1,
+      retry: (failureCount, error: any) => {
+        // Don't retry on 404/403 for public pages
+        if (error?.status === 404 || error?.status === 403) return false;
+        return failureCount < 1;
+      },
     },
   },
 });
@@ -30,6 +35,16 @@ const router = createBrowserRouter([
   {
     path: "/p/:pageId",
     element: <HomePage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/public/:pageId",
+    element: <PublicPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/s/:pageId",
+    element: <PublicPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {

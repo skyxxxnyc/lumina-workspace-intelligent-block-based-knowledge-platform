@@ -3,16 +3,17 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
-export type BlockType = 
-  | 'text' 
-  | 'h1' 
-  | 'h2' 
-  | 'h3' 
-  | 'todo' 
-  | 'bullet' 
-  | 'divider' 
-  | 'image' 
-  | 'callout';
+export type BlockType =
+  | 'text'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'todo'
+  | 'bullet'
+  | 'divider'
+  | 'image'
+  | 'callout'
+  | 'table';
 export interface Block {
   id: string;
   type: BlockType;
@@ -23,6 +24,8 @@ export interface Block {
     src?: string;
     alt?: string;
     caption?: string;
+    tableData?: string[][];
+    tableHeaders?: string[];
   };
 }
 export interface Page {
@@ -32,6 +35,7 @@ export interface Page {
   cover?: string;
   parentId: string | null;
   blocks: Block[];
+  isPublic?: boolean;
   createdAt: number;
   updatedAt: number;
 }
@@ -40,6 +44,7 @@ export interface PageMetadata {
   title: string;
   icon?: string;
   parentId: string | null;
+  isPublic?: boolean;
 }
 export interface User {
   id: string;

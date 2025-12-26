@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Heading1, Heading2, Heading3, 
-  Type, CheckSquare, List, 
-  Minus, Image as ImageIcon, Info 
+import {
+  Heading1, Heading2, Heading3,
+  Type, CheckSquare, List,
+  Minus, Image as ImageIcon, Info, Table
 } from 'lucide-react';
 import {
   Command,
@@ -27,6 +27,7 @@ const ITEMS: { type: BlockType; label: string; icon: React.ReactNode; descriptio
   { type: 'h3', label: 'Heading 3', icon: <Heading3 className="size-4" />, description: 'Small section heading.' },
   { type: 'todo', label: 'To-do list', icon: <CheckSquare className="size-4" />, description: 'Track tasks with a checkbox.' },
   { type: 'bullet', label: 'Bulleted list', icon: <List className="size-4" />, description: 'Create a simple bulleted list.' },
+  { type: 'table', label: 'Table', icon: <Table className="size-4" />, description: 'Create a simple data table.' },
   { type: 'divider', label: 'Divider', icon: <Minus className="size-4" />, description: 'Visually divide sections.' },
   { type: 'callout', label: 'Callout', icon: <Info className="size-4" />, description: 'Make writing stand out.' },
   { type: 'image', label: 'Image', icon: <ImageIcon className="size-4" />, description: 'Upload or embed with a link.' },
@@ -39,18 +40,18 @@ export function SlashMenu({ isOpen, onClose, onSelect, position }: SlashMenuProp
   if (!isOpen) return null;
   return (
     <Popover open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <PopoverContent 
-        className="p-0 w-72 shadow-xl border-zinc-200 dark:border-zinc-800" 
+      <PopoverContent
+        className="p-0 w-72 shadow-xl border-zinc-200 dark:border-zinc-800"
         align="start"
         side="bottom"
         style={{ position: 'fixed', top: position.top, left: position.left }}
       >
         <Command className="rounded-lg">
-          <CommandInput 
-            placeholder="Filter blocks..." 
-            value={search} 
+          <CommandInput
+            placeholder="Filter blocks..."
+            value={search}
             onValueChange={setSearch}
-            autoFocus 
+            autoFocus
           />
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>

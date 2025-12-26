@@ -9,6 +9,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const tree = await PageEntity.getTree(c.env);
     return ok(c, tree);
   });
+  // GET PUBLIC PAGE
+  app.get('/api/public/pages/:id', async (c) => {
+    const id = c.req.param('id');
+    const page = new PageEntity(c.env, id);
+    if (!await page.exists()) return notFound(c, 'Page not found');
+    const state = await page.getState();
+    if (!state.isPublic) return c.json({ success: false, error: 'This page is private' }, 403);
+    return ok(c, state);
+  });
   // GET FULL PAGE
   app.get('/api/pages/:id', async (c) => {
     const id = c.req.param('id');
@@ -25,6 +34,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       title: body.title || "Untitled",
       parentId: body.parentId || null,
       blocks: body.blocks || [{ id: crypto.randomUUID(), type: 'text', content: '' }],
+      isPublic: false,
       createdAt: Date.now(),
       updatedAt: Date.now()
     };
@@ -37,10 +47,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const body = await c.req.json();
     const page = new PageEntity(c.env, id);
     if (!await page.exists()) return notFound(c, 'Page not found');
-    if (body.blocks) {
-      return ok(c, await page.updateBlocks(body.blocks));
-    }
-    return ok(c, await page.updateMetadata(body));
+    // Support partial updates including isPublic
+    return ok(c, await page.mutate(s => ({
+      ...s,
+      ...body,
+      updatedAt: Date.now()
+    })));
   });
   // DELETE PAGE
   app.delete('/api/pages/:id', async (c) => {

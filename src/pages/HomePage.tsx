@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -8,12 +8,16 @@ import { BlockEditor } from '@/components/editor/BlockEditor';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Toaster, toast } from 'sonner';
 import { debounce } from '@/lib/utils';
-import { ImageIcon, Smile, MoreHorizontal } from 'lucide-react';
+import { ImageIcon, Smile, Share2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 export function HomePage() {
   const { pageId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [isCopied, setIsCopied] = React.useState(false);
   const { data: pagesTree } = useQuery<PageMetadata[]>({
     queryKey: ['pages', 'tree'],
     queryFn: () => api<PageMetadata[]>('/api/pages'),
@@ -38,11 +42,11 @@ export function HomePage() {
       queryClient.invalidateQueries({ queryKey: ['pages', 'tree'] });
     }
   });
-  const debouncedUpdateBlocks = useCallback(
-    debounce((blocks: Block[]) => {
+  const debouncedUpdateBlocks = useMemo(
+    () => debounce((blocks: Block[]) => {
       updatePage.mutate({ blocks });
     }, 1000),
-    [pageId]
+    [updatePage.mutate]
   );
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     updatePage.mutate({ title: e.target.value });
@@ -52,8 +56,19 @@ export function HomePage() {
     updatePage.mutate({ cover: `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80` });
   };
   const setRandomIcon = () => {
-    const icons = ["🚀", "💡", "📝", "🌈", "🔥", "🛠️", "📚", "⭐", "🍀", "🎨"];
+    const icons = ["🚀", "💡", "��", "🌈", "🔥", "🛠️", "📚", "⭐", "🍀", "🎨"];
     updatePage.mutate({ icon: icons[Math.floor(Math.random() * icons.length)] });
+  };
+  const togglePublic = (checked: boolean) => {
+    updatePage.mutate({ isPublic: checked });
+    toast.success(checked ? "Page is now public" : "Page is now private");
+  };
+  const copyPublicLink = () => {
+    const url = `${window.location.origin}/public/${pageId}`;
+    navigator.clipboard.writeText(url);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+    toast.success("Public link copied to clipboard");
   };
   if (isLoading) {
     return (
@@ -96,6 +111,44 @@ export function HomePage() {
               </Button>
             </div>
           )}
+          <div className="absolute top-4 right-4 flex gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="secondary" size="sm" className="bg-white/90 dark:bg-zinc-800/90 backdrop-blur shadow-sm">
+                  <Share2 className="mr-2 size-4" /> Share
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4" align="end">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="public-toggle" className="text-sm font-medium">Publish to web</Label>
+                    <Switch 
+                      id="public-toggle" 
+                      checked={!!page.isPublic} 
+                      onCheckedChange={togglePublic} 
+                    />
+                  </div>
+                  {page.isPublic ? (
+                    <div className="pt-2 space-y-2">
+                      <p className="text-xs text-muted-foreground">Anyone with the link can view this page.</p>
+                      <div className="flex gap-2">
+                        <input 
+                          readOnly 
+                          className="flex-1 px-2 py-1 text-xs bg-zinc-100 dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800 focus:outline-none" 
+                          value={`${window.location.origin}/public/${pageId}`}
+                        />
+                        <Button size="icon" variant="outline" className="size-7" onClick={copyPublicLink}>
+                          {isCopied ? <Check className="size-3 text-green-500" /> : <Copy className="size-3" />}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">This page is private and only visible to you.</p>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
           {page.cover && (
             <div className="absolute bottom-4 right-4 opacity-0 group-hover/header:opacity-100 transition-opacity">
               <Button 
@@ -134,9 +187,6 @@ export function HomePage() {
                 {!page.icon && <Button variant="ghost" size="sm" onClick={setRandomIcon} className="text-xs h-7">Add icon</Button>}
                 {!page.cover && <Button variant="ghost" size="sm" onClick={addRandomCover} className="text-xs h-7">Add cover</Button>}
               </div>
-              <Button variant="ghost" size="icon" className="size-8">
-                <MoreHorizontal className="size-4" />
-              </Button>
             </div>
             <input
               type="text"
