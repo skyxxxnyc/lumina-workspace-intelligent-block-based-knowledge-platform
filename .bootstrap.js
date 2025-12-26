@@ -82,7 +82,8 @@ function runSetupCommands() {
     "bun install lodash-es",
     "bun add @types/uuid",
     "bun add lucide-react@latest",
-    "bun add @radix-ui/react-radio-group"
+    "bun add @radix-ui/react-radio-group",
+    "bun add cmdk"
 ];
     
     if (commands.length === 0) {
