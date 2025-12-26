@@ -81,7 +81,8 @@ function runSetupCommands() {
     "bun add react-textarea-autosize@^8.5.4",
     "bun install lodash-es",
     "bun add @types/uuid",
-    "bun add lucide-react@latest"
+    "bun add lucide-react@latest",
+    "bun add @radix-ui/react-radio-group"
 ];
     
     if (commands.length === 0) {
