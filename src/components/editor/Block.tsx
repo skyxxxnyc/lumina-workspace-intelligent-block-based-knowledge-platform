@@ -46,7 +46,8 @@ export function BlockItem({ block, isFocused, onUpdate, onAdd, onDelete, onFocus
       e.preventDefault();
       onAdd();
     } else if (e.key === 'Backspace' && block.content === '') {
-      e.preventDefault();
+      // Prevents deletion if content is empty but deletion is triggered
+      // The parent component should handle the actual "only one block" check
       onDelete();
     } else if (e.key === 'Escape') {
       setIsSlashMenuOpen(false);

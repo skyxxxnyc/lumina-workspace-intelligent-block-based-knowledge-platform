@@ -58,7 +58,7 @@ export function DatabaseEditor({ database, onUpdate }: DatabaseEditorProps) {
   }
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-2 bg-background/50 backdrop-blur-sm sticky top-0 z-20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-2 bg-background/95 backdrop-blur-sm sticky top-0 z-20">
         <Tabs value={activeView} onValueChange={(v) => setActiveView(v as ViewType)} className="w-auto">
           <TabsList className="bg-transparent p-0 gap-1 h-9">
             <TabsTrigger
@@ -76,7 +76,7 @@ export function DatabaseEditor({ database, onUpdate }: DatabaseEditorProps) {
           </TabsList>
         </Tabs>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800" onClick={() => createRow.mutate()}>
+          <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800" onClick={() => createRow.mutate({})}>
             <Plus className="size-3.5 mr-1.5" /> New Item
           </Button>
           <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800" onClick={addProperty}>

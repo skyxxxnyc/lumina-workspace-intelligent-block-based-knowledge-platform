@@ -27,7 +27,7 @@ export function AppSidebar(): JSX.Element {
     queryFn: () => api<PageMetadata[]>('/api/pages'),
   });
   const createPage = useMutation({
-    mutationFn: ({ type = 'page', parentId = null }: { type?: 'page' | 'database', parentId?: string | null } = {}) => 
+    mutationFn: ({ type = 'page', parentId = null }: { type?: 'page' | 'database', parentId?: string | null } = {}) =>
       api<PageMetadata>('/api/pages', {
         method: 'POST',
         body: JSON.stringify({ title: '', parentId, type })
@@ -60,7 +60,7 @@ export function AppSidebar(): JSX.Element {
               variant="ghost"
               size="icon"
               className="size-5 hover:bg-zinc-200 dark:hover:bg-zinc-800"
-              onClick={() => createPage.mutate({ type: 'page' })}
+              onClick={() => createPage.mutate({})}
               title="New Page"
             >
               <Plus className="size-3" />
@@ -68,12 +68,18 @@ export function AppSidebar(): JSX.Element {
           </div>
           <SidebarMenu className="px-2">
             {rootPages.map((page) => (
-              <PageTreeItem key={page.id} page={page} pages={pages} activeId={pageId} onCreateSubPage={(pid) => createPage.mutate({ parentId: pid })} />
+              <PageTreeItem 
+                key={page.id} 
+                page={page} 
+                pages={pages} 
+                activeId={pageId} 
+                onCreateSubPage={(pid) => createPage.mutate({ parentId: pid })} 
+              />
             ))}
             {rootPages.length === 0 && (
               <div className="px-2 py-4 text-center">
                 <p className="text-[11px] text-muted-foreground mb-2">No pages yet</p>
-                <Button variant="outline" size="sm" className="w-full text-[10px] h-7" onClick={() => createPage.mutate()}>
+                <Button variant="outline" size="sm" className="w-full text-[10px] h-7" onClick={() => createPage.mutate({})}>
                   Create your first page
                 </Button>
               </div>
@@ -100,14 +106,14 @@ export function AppSidebar(): JSX.Element {
     </Sidebar>
   );
 }
-function PageTreeItem({ 
-  page, 
-  pages, 
-  activeId, 
-  onCreateSubPage 
-}: { 
-  page: PageMetadata; 
-  pages: PageMetadata[]; 
+function PageTreeItem({
+  page,
+  pages,
+  activeId,
+  onCreateSubPage
+}: {
+  page: PageMetadata;
+  pages: PageMetadata[];
   activeId?: string;
   onCreateSubPage: (pid: string) => void;
 }) {

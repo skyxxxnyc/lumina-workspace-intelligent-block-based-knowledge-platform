@@ -14,7 +14,6 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { v4 as uuidv4 } from 'uuid';
 import { Block, BlockType } from '@shared/types';
 import { BlockItem } from './Block';
 interface BlockEditorProps {
@@ -54,7 +53,7 @@ export function BlockEditor({ initialBlocks, onChange }: BlockEditorProps) {
   };
   const addBlock = (afterId: string, type: BlockType = 'text') => {
     const index = blocks.findIndex((b) => b.id === afterId);
-    const newBlock: Block = { id: uuidv4(), type, content: '' };
+    const newBlock: Block = { id: crypto.randomUUID(), type, content: '' };
     const newBlocks = [...blocks];
     newBlocks.splice(index + 1, 0, newBlock);
     setBlocks(newBlocks);
