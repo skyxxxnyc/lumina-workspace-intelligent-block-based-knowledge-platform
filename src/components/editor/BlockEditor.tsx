@@ -14,7 +14,8 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Block, BlockType } from '@shared/types';
+import { v4 as uuidv4 } from 'uuid';
+import { Block, Page } from '@shared/types';
 import { BlockItem } from './Block';
 interface BlockEditorProps {
   initialBlocks: Block[];
@@ -22,7 +23,7 @@ interface BlockEditorProps {
 }
 export function BlockEditor({ initialBlocks, onChange }: BlockEditorProps) {
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
-  const [focusedBlockId, setFocusedBlockId] = useState<string | null>(null);
+  // Sync with prop updates (e.g. when switching pages)
   useEffect(() => {
     setBlocks(initialBlocks);
   }, [initialBlocks]);
@@ -51,26 +52,18 @@ export function BlockEditor({ initialBlocks, onChange }: BlockEditorProps) {
     setBlocks(newBlocks);
     onChange(newBlocks);
   };
-  const addBlock = (afterId: string, type: BlockType = 'text') => {
+  const addBlock = (afterId: string, type: Block['type'] = 'text') => {
     const index = blocks.findIndex((b) => b.id === afterId);
-    const newBlock: Block = { id: crypto.randomUUID(), type, content: '' };
+    const newBlock: Block = { id: uuidv4(), type, content: '' };
     const newBlocks = [...blocks];
     newBlocks.splice(index + 1, 0, newBlock);
     setBlocks(newBlocks);
-    setFocusedBlockId(newBlock.id);
     onChange(newBlocks);
+    // Auto-focus logic would happen in Block components via a shared "focusedBlockId" state or ref
   };
   const deleteBlock = (id: string) => {
-    if (blocks.length <= 1) return;
-    const index = blocks.findIndex((b) => b.id === id);
-    const prevBlock = blocks[index - 1];
+    if (blocks.length <= 1) return; // Keep at least one block
     const newBlocks = blocks.filter((b) => b.id !== id);
-    setBlocks(newBlocks);
-    if (prevBlock) setFocusedBlockId(prevBlock.id);
-    onChange(newBlocks);
-  };
-  const changeBlockType = (id: string, type: BlockType) => {
-    const newBlocks = blocks.map((b) => (b.id === id ? { ...b, type } : b));
     setBlocks(newBlocks);
     onChange(newBlocks);
   };
@@ -87,12 +80,9 @@ export function BlockEditor({ initialBlocks, onChange }: BlockEditorProps) {
               <BlockItem
                 key={block.id}
                 block={block}
-                isFocused={focusedBlockId === block.id}
                 onUpdate={(updates) => updateBlock(block.id, updates)}
                 onAdd={() => addBlock(block.id)}
                 onDelete={() => deleteBlock(block.id)}
-                onFocus={() => setFocusedBlockId(block.id)}
-                onTypeChange={(type) => changeBlockType(block.id, type)}
               />
             ))}
           </div>
