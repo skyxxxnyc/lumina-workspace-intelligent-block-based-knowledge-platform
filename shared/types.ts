@@ -6,7 +6,7 @@ export interface ApiResponse<T = unknown> {
 export type BlockType =
   | 'text' | 'h1' | 'h2' | 'h3' | 'todo' | 'bullet' | 'divider' | 'image' | 'callout' | 'table';
 export type PageType = 'page' | 'database';
-export type PropertyType = 
+export type PropertyType =
   | 'text' | 'number' | 'date' | 'select' | 'multi-select' | 'checkbox' | 'url';
 export interface PropertyOption {
   id: string;
@@ -24,7 +24,11 @@ export interface DatabaseView {
   id: string;
   name: string;
   type: ViewType;
-  config?: any;
+  config?: {
+    groupByPropertyId?: string;
+    columnWidths?: Record<string, number>;
+    hiddenProperties?: string[];
+  };
 }
 export interface Block {
   id: string;

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { PropertySchema, PropertyOption } from '@shared/types';
-import { cn, getColorClass } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Check, Plus, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Check, Plus } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 interface PropertyCellProps {
   property: PropertySchema;
@@ -21,9 +21,9 @@ export function PropertyCell({ property, value, onChange, className }: PropertyC
       case 'checkbox':
         return (
           <div className="flex items-center justify-center h-full w-full">
-            <Checkbox
-              checked={!!value}
-              onCheckedChange={(val) => onChange(!!val)}
+            <Checkbox 
+              checked={!!value} 
+              onCheckedChange={(val) => onChange(!!val)} 
             />
           </div>
         );
@@ -49,20 +49,14 @@ export function PropertyCell({ property, value, onChange, className }: PropertyC
             </PopoverContent>
           </Popover>
         );
-      case 'select': {
+      case 'select':
         const selectedOption = property.options?.find(o => o.id === value);
         return (
           <Popover open={isEditing} onOpenChange={setIsEditing}>
             <PopoverTrigger asChild>
-              <button className="flex items-center px-3 py-2 w-full h-full text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left overflow-hidden">
+              <button className="flex items-center px-3 py-2 w-full h-full text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
                 {selectedOption ? (
-                  <Badge 
-                    variant="secondary" 
-                    className={cn(
-                      "text-[10px] font-bold uppercase tracking-tight truncate border-none",
-                      getColorClass(selectedOption.color, 'badge')
-                    )}
-                  >
+                  <Badge variant="secondary" className="text-xs font-normal">
                     {selectedOption.label}
                   </Badge>
                 ) : (
@@ -85,13 +79,8 @@ export function PropertyCell({ property, value, onChange, className }: PropertyC
                         }}
                         className="flex items-center justify-between"
                       >
-                        <Badge 
-                          variant="secondary" 
-                          className={cn("text-xs font-normal border-none", getColorClass(opt.color, 'badge'))}
-                        >
-                          {opt.label}
-                        </Badge>
-                        {value === opt.id && <Check className="size-3.5 text-primary" />}
+                        <Badge variant="secondary" className="text-xs font-normal">{opt.label}</Badge>
+                        {value === opt.id && <Check className="size-3.5" />}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -100,68 +89,6 @@ export function PropertyCell({ property, value, onChange, className }: PropertyC
             </PopoverContent>
           </Popover>
         );
-      }
-      case 'multi-select': {
-        const values = Array.isArray(value) ? value : [];
-        const selectedOptions = property.options?.filter(o => values.includes(o.id)) || [];
-        return (
-          <Popover open={isEditing} onOpenChange={setIsEditing}>
-            <PopoverTrigger asChild>
-              <button className="flex items-center flex-wrap gap-1 px-3 py-1.5 w-full h-full text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left overflow-hidden min-h-[40px]">
-                {selectedOptions.length > 0 ? (
-                  selectedOptions.map(opt => (
-                    <Badge 
-                      key={opt.id} 
-                      variant="secondary" 
-                      className={cn(
-                        "text-[10px] font-bold uppercase tracking-tight h-5 border-none",
-                        getColorClass(opt.color, 'badge')
-                      )}
-                    >
-                      {opt.label}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-zinc-400">Empty</span>
-                )}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="p-0 w-[220px]" align="start">
-              <Command>
-                <CommandInput placeholder="Search options..." />
-                <CommandList>
-                  <CommandEmpty>No options found.</CommandEmpty>
-                  <CommandGroup>
-                    {property.options?.map((opt) => {
-                      const isSelected = values.includes(opt.id);
-                      return (
-                        <CommandItem
-                          key={opt.id}
-                          onSelect={() => {
-                            const next = isSelected
-                              ? values.filter(v => v !== opt.id)
-                              : [...values, opt.id];
-                            onChange(next);
-                          }}
-                          className="flex items-center justify-between"
-                        >
-                          <Badge 
-                            variant="secondary" 
-                            className={cn("text-xs font-normal border-none", getColorClass(opt.color, 'badge'))}
-                          >
-                            {opt.label}
-                          </Badge>
-                          {isSelected && <Check className="size-3.5 text-primary" />}
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        );
-      }
       default:
         return (
           <input
