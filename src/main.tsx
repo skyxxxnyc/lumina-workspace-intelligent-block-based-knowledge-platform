@@ -11,6 +11,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
 import { PublicPage } from '@/pages/PublicPage'
@@ -19,7 +20,6 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 1000 * 60,
       retry: (failureCount, error: any) => {
-        // Don't retry on 404/403 for public pages
         if (error?.status === 404 || error?.status === 403) return false;
         return failureCount < 1;
       },
@@ -56,7 +56,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
-        <RouterProvider router={router} />
+        <SidebarProvider defaultOpen={true}>
+          <RouterProvider router={router} />
+        </SidebarProvider>
       </ErrorBoundary>
     </QueryClientProvider>
   </StrictMode>,
