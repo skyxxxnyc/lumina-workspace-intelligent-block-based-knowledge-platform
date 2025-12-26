@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api-client';
@@ -9,11 +9,12 @@ import { DatabaseEditor } from '@/components/database/DatabaseEditor';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Toaster, toast } from 'sonner';
 import { debounce } from '@/lib/utils';
-import { ImageIcon, Smile, Share2, Copy, Check } from 'lucide-react';
+import { ImageIcon, Share2, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { motion } from 'framer-motion';
 export function HomePage() {
   const { pageId } = useParams();
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export function HomePage() {
     queryKey: ['pages', 'tree'],
     queryFn: () => api<PageMetadata[]>('/api/pages'),
   });
-  React.useEffect(() => {
+  useEffect(() => {
     if (!pageId && pagesTree && pagesTree.length > 0) {
       navigate(`/p/${pagesTree[0].id}`, { replace: true });
     }
@@ -57,7 +58,7 @@ export function HomePage() {
     updatePage.mutate({ cover: `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80` });
   };
   const setRandomIcon = () => {
-    const icons = ["🚀", "💡", "🧠", "🌈", "🔥", "🛠️", "📚", "⭐", "🍀", "🎨"];
+    const icons = ["��", "💡", "🧠", "🌈", "🔥", "🛠️", "📚", "��", "🍀", "🎨"];
     updatePage.mutate({ icon: icons[Math.floor(Math.random() * icons.length)] });
   };
   const togglePublic = (checked: boolean) => {
@@ -69,16 +70,18 @@ export function HomePage() {
     navigator.clipboard.writeText(url);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
-    toast.success("Public link copied to clipboard");
+    toast.success("Public link copied");
   };
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="max-w-4xl mx-auto py-12 px-8 space-y-4">
-          <Skeleton className="h-12 w-3/4 mb-8" />
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-full" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 space-y-8">
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-3/4 mb-4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
         </div>
       </AppLayout>
     );
@@ -86,26 +89,32 @@ export function HomePage() {
   if (error || !page) {
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center h-[60vh] space-y-4">
-          <h2 className="text-2xl font-bold">Page not found</h2>
-          <p className="text-muted-foreground">The page you're looking for doesn't exist.</p>
-          <Button onClick={() => navigate('/')}>Go back home</Button>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+          <h2 className="text-2xl font-bold tracking-tight mb-2">Page not found</h2>
+          <p className="text-muted-foreground mb-6 max-w-sm">The page you're looking for doesn't exist or you don't have access.</p>
+          <Button onClick={() => navigate('/')}>Return to workspace</Button>
         </div>
       </AppLayout>
     );
   }
   return (
     <AppLayout>
-      <div className="min-h-full bg-background pb-20">
-        <div className="group/header relative h-[30vh] w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
+      <motion.div 
+        key={pageId}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+        className="min-h-full bg-background"
+      >
+        <div className="group/header relative h-[25vh] md:h-[30vh] w-full bg-zinc-100 dark:bg-zinc-900 overflow-hidden">
           {page.cover ? (
             <img src={page.cover} className="w-full h-full object-cover" alt="cover" />
           ) : (
-            <div className="w-full h-full flex items-end justify-center pb-8 opacity-0 group-hover/header:opacity-100 transition-opacity">
+            <div className="w-full h-full flex items-center justify-center opacity-0 group-hover/header:opacity-100 transition-opacity">
               <Button
                 variant="secondary"
                 size="sm"
-                className="bg-white/90 dark:bg-zinc-800/90 backdrop-blur"
+                className="bg-white/40 dark:bg-zinc-800/40 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-glass"
                 onClick={addRandomCover}
               >
                 <ImageIcon className="mr-2 size-4" /> Add cover
@@ -115,7 +124,7 @@ export function HomePage() {
           <div className="absolute top-4 right-4 flex gap-2">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="secondary" size="sm" className="bg-white/90 dark:bg-zinc-800/90 backdrop-blur shadow-sm">
+                <Button variant="secondary" size="sm" className="bg-white/60 dark:bg-zinc-800/60 backdrop-blur-lg shadow-sm border border-white/20">
                   <Share2 className="mr-2 size-4" /> Share
                 </Button>
               </PopoverTrigger>
@@ -135,7 +144,7 @@ export function HomePage() {
                       <div className="flex gap-2">
                         <input
                           readOnly
-                          className="flex-1 px-2 py-1 text-xs bg-zinc-100 dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800 focus:outline-none"
+                          className="flex-1 px-2 py-1 text-[11px] bg-zinc-100 dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800 focus:outline-none"
                           value={`${window.location.origin}/public/${pageId}`}
                         />
                         <Button size="icon" variant="outline" className="size-7" onClick={copyPublicLink}>
@@ -151,34 +160,38 @@ export function HomePage() {
             </Popover>
           </div>
         </div>
-        <div className="max-w-6xl mx-auto px-8 lg:px-12 -mt-16 relative z-10">
-          <div className="group/title-section mb-8">
-            <div className="relative inline-block mb-4">
-              <div
-                className="size-32 rounded-3xl bg-white dark:bg-zinc-900 shadow-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-6xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-950 transition-colors"
-                onClick={setRandomIcon}
-              >
-                {page.icon || "📄"}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 md:-mt-20 relative z-10">
+          <div className="py-8 md:py-10 lg:py-12">
+            <div className="group/title-section mb-10 max-w-4xl mx-auto">
+              <div className="relative inline-block mb-6">
+                <div
+                  className="size-24 md:size-32 rounded-3xl bg-white dark:bg-zinc-950 shadow-2xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-5xl md:text-6xl cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all hover:scale-105"
+                  onClick={setRandomIcon}
+                >
+                  {page.icon || "📄"}
+                </div>
               </div>
+              <input
+                type="text"
+                className="w-full text-4xl md:text-5xl font-bold bg-transparent border-none focus:ring-0 p-0 placeholder:text-zinc-200 dark:placeholder:text-zinc-800 outline-none leading-tight"
+                value={page.title}
+                onChange={handleTitleChange}
+                placeholder="Untitled"
+              />
             </div>
-            <input
-              type="text"
-              className="w-full text-5xl font-bold bg-transparent border-none focus:ring-0 p-0 placeholder:text-zinc-200 dark:placeholder:text-zinc-800 outline-none"
-              value={page.title}
-              onChange={handleTitleChange}
-              placeholder="Untitled"
-            />
+            <div className="max-w-4xl mx-auto pb-32">
+              {page.type === 'database' ? (
+                <DatabaseEditor database={page} onUpdate={updatePage.mutate} />
+              ) : (
+                <BlockEditor
+                  initialBlocks={page.blocks}
+                  onChange={(blocks) => debouncedUpdateBlocks(blocks)}
+                />
+              )}
+            </div>
           </div>
-          {page.type === 'database' ? (
-            <DatabaseEditor database={page} onUpdate={updatePage.mutate} />
-          ) : (
-            <BlockEditor
-              initialBlocks={page.blocks}
-              onChange={(blocks) => debouncedUpdateBlocks(blocks)}
-            />
-          )}
         </div>
-      </div>
+      </motion.div>
       <Toaster position="bottom-right" />
     </AppLayout>
   );

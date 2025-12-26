@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { PropertyOption, PropertySchema } from '@shared/types';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { X, Plus, Palette, Check } from 'lucide-react';
+import { X, Plus, Palette } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn, getColorClass } from '@/lib/utils';
 const COLORS = [
   { name: 'Gray', value: 'gray' },
   { name: 'Blue', value: 'blue' },
@@ -51,61 +50,46 @@ export function OptionManager({ property, onUpdate }: OptionManagerProps) {
           onChange={(e) => setNewLabel(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addOption()}
         />
-        <Button size="icon" variant="ghost" className="size-8 hover:bg-zinc-100 dark:hover:bg-zinc-800" onClick={addOption}>
+        <Button size="icon" variant="ghost" className="size-8" onClick={addOption}>
           <Plus className="size-4" />
         </Button>
       </div>
-      <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+      <div className="space-y-2 max-h-[200px] overflow-y-auto">
         {options.map((opt) => (
-          <div key={opt.id} className="flex items-center justify-between group py-0.5">
+          <div key={opt.id} className="flex items-center justify-between group">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <Badge 
-                variant="secondary" 
-                className={cn("text-[10px] font-bold uppercase border-none", getColorClass(opt.color, 'badge'))}
-              >
+              <Badge variant="secondary" className="text-[10px] font-medium uppercase">
                 {opt.label}
               </Badge>
             </div>
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-6 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                  <Button variant="ghost" size="icon" className="size-6">
                     <Palette className="size-3 text-muted-foreground" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-44 p-2" align="end">
-                  <div className="grid grid-cols-4 gap-1.5">
+                <PopoverContent className="w-40 p-2" align="end">
+                  <div className="grid grid-cols-4 gap-1">
                     {COLORS.map((c) => (
                       <button
                         key={c.value}
-                        className={cn(
-                          "size-8 rounded-md border flex items-center justify-center transition-all hover:scale-105",
-                          getColorClass(c.value, 'bg'),
-                          getColorClass(c.value, 'border'),
-                          opt.color === c.value ? "ring-2 ring-primary ring-offset-1" : ""
-                        )}
+                        className={`size-6 rounded-full border border-zinc-200 dark:border-zinc-800 bg-${c.value}-100 dark:bg-${c.value}-900 hover:scale-110 transition-transform`}
                         onClick={() => updateOptionColor(opt.id, c.value)}
                         title={c.name}
-                      >
-                        {opt.color === c.value && <Check className="size-3 text-primary" />}
-                      </button>
+                      />
                     ))}
                   </div>
                 </PopoverContent>
               </Popover>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="size-6 text-destructive hover:text-destructive hover:bg-destructive/10" 
-                onClick={() => removeOption(opt.id)}
-              >
+              <Button variant="ghost" size="icon" className="size-6 text-destructive hover:text-destructive" onClick={() => removeOption(opt.id)}>
                 <X className="size-3" />
               </Button>
             </div>
           </div>
         ))}
         {options.length === 0 && (
-          <p className="text-[10px] text-muted-foreground text-center py-4 italic">No options created</p>
+          <p className="text-[10px] text-muted-foreground text-center py-2">No options created</p>
         )}
       </div>
     </div>

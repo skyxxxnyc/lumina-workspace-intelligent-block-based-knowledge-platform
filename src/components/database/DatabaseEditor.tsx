@@ -9,7 +9,6 @@ import { BoardView } from './BoardView';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { motion, AnimatePresence } from 'framer-motion';
-import { v4 as uuidv4 } from 'uuid';
 interface DatabaseEditorProps {
   database: Page;
   onUpdate: (updates: Partial<Page>) => void;
@@ -38,7 +37,7 @@ export function DatabaseEditor({ database, onUpdate }: DatabaseEditorProps) {
   });
   const addProperty = () => {
     const newProp = {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       name: 'New Property',
       type: 'text' as const
     };
@@ -46,47 +45,56 @@ export function DatabaseEditor({ database, onUpdate }: DatabaseEditorProps) {
     onUpdate({ propertiesSchema: schema });
   };
   if (isLoading) {
-    return <div className="space-y-4"><Skeleton className="h-12 w-full" /><Skeleton className="h-64 w-full" /></div>;
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-full rounded-md" />
+        <div className="space-y-2">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    );
   }
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-2 bg-background/50 backdrop-blur-sm sticky top-0 z-20">
         <Tabs value={activeView} onValueChange={(v) => setActiveView(v as ViewType)} className="w-auto">
           <TabsList className="bg-transparent p-0 gap-1 h-9">
-            <TabsTrigger 
-              value="table" 
-              className="data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none px-3 h-8 text-xs gap-2"
+            <TabsTrigger
+              value="table"
+              className="data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none px-3 h-8 text-xs gap-2 transition-all"
             >
               <TableIcon className="size-3.5" /> Table
             </TabsTrigger>
-            <TabsTrigger 
-              value="board" 
-              className="data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none px-3 h-8 text-xs gap-2"
+            <TabsTrigger
+              value="board"
+              className="data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none px-3 h-8 text-xs gap-2 transition-all"
             >
               <LayoutGrid className="size-3.5" /> Board
             </TabsTrigger>
           </TabsList>
         </Tabs>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => createRow.mutate()}>
+          <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800" onClick={() => createRow.mutate()}>
             <Plus className="size-3.5 mr-1.5" /> New Item
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={addProperty}>
+          <Button variant="ghost" size="sm" className="h-8 text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800" onClick={addProperty}>
             <Plus className="size-3.5 mr-1.5" /> Add Property
           </Button>
-          <Button variant="ghost" size="icon" className="size-8">
+          <Button variant="ghost" size="icon" className="size-8 hover:bg-zinc-100 dark:hover:bg-zinc-800">
             <Settings2 className="size-4" />
           </Button>
         </div>
       </div>
-      <div className="relative overflow-hidden min-h-[400px]">
+      <div className="relative overflow-visible min-h-[400px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeView}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
           >
             {activeView === 'table' ? (
               <TableView
