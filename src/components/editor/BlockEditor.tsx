@@ -1,0 +1,103 @@
+import React, { useState, useEffect } from 'react';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { Block, BlockType } from '@shared/types';
+import { BlockItem } from './Block';
+interface BlockEditorProps {
+  initialBlocks: Block[];
+  onChange: (blocks: Block[]) => void;
+}
+export function BlockEditor({ initialBlocks, onChange }: BlockEditorProps) {
+  const [blocks, setBlocks] = useState<Block[]>(initialBlocks);
+  const [focusedBlockId, setFocusedBlockId] = useState<string | null>(null);
+  useEffect(() => {
+    setBlocks(initialBlocks);
+  }, [initialBlocks]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = blocks.findIndex((b) => b.id === active.id);
+      const newIndex = blocks.findIndex((b) => b.id === over.id);
+      const newBlocks = arrayMove(blocks, oldIndex, newIndex);
+      setBlocks(newBlocks);
+      onChange(newBlocks);
+    }
+  };
+  const updateBlock = (id: string, updates: Partial<Block>) => {
+    const newBlocks = blocks.map((b) => (b.id === id ? { ...b, ...updates } : b));
+    setBlocks(newBlocks);
+    onChange(newBlocks);
+  };
+  const addBlock = (afterId: string, type: BlockType = 'text') => {
+    const index = blocks.findIndex((b) => b.id === afterId);
+    const newBlock: Block = { id: crypto.randomUUID(), type, content: '' };
+    const newBlocks = [...blocks];
+    newBlocks.splice(index + 1, 0, newBlock);
+    setBlocks(newBlocks);
+    setFocusedBlockId(newBlock.id);
+    onChange(newBlocks);
+  };
+  const deleteBlock = (id: string) => {
+    if (blocks.length <= 1) return;
+    const index = blocks.findIndex((b) => b.id === id);
+    const prevBlock = blocks[index - 1];
+    const newBlocks = blocks.filter((b) => b.id !== id);
+    setBlocks(newBlocks);
+    if (prevBlock) setFocusedBlockId(prevBlock.id);
+    onChange(newBlocks);
+  };
+  const changeBlockType = (id: string, type: BlockType) => {
+    const newBlocks = blocks.map((b) => (b.id === id ? { ...b, type } : b));
+    setBlocks(newBlocks);
+    onChange(newBlocks);
+  };
+  return (
+    <div className="max-w-3xl mx-auto pb-32">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+          <div className="space-y-1">
+            {blocks.map((block) => (
+              <BlockItem
+                key={block.id}
+                block={block}
+                isFocused={focusedBlockId === block.id}
+                onUpdate={(updates) => updateBlock(block.id, updates)}
+                onAdd={() => addBlock(block.id)}
+                onDelete={() => deleteBlock(block.id)}
+                onFocus={() => setFocusedBlockId(block.id)}
+                onTypeChange={(type) => changeBlockType(block.id, type)}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+}

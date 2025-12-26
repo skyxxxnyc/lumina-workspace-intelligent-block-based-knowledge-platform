@@ -77,12 +77,7 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [
-    "bun add react-textarea-autosize@^8.5.4",
-    "bun install lodash-es",
-    "bun add @types/uuid",
-    "bun add lucide-react@latest"
-];
+    const commands = [];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
