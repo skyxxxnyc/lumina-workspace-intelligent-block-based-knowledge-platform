@@ -1,6 +1,6 @@
 # Cloudflare Workers React Template
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/skyxxxnyc/lumina-workspace-intelligent-block-based-knowledge-platform)
 
 A production-ready full-stack template for building applications on Cloudflare Workers. This template features a React frontend with Tailwind CSS and shadcn/ui, powered by a Cloudflare Workers backend using Durable Objects for stateful entities (users, chats, messages). It demonstrates scalable, type-safe entity management with indexing, pagination, and CRUD operations.
 
@@ -99,7 +99,7 @@ Or manually:
 
 Configuration is in `wrangler.jsonc`. Assets are automatically bundled and served as a SPA.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/skyxxxnyc/lumina-workspace-intelligent-block-based-knowledge-platform)
 
 ## Environment Variables
 
