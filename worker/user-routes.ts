@@ -3,37 +3,36 @@ import type { Env } from './core-utils';
 import { PageEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  // GET PAGE TREE
   app.get('/api/pages', async (c) => {
     await PageEntity.ensureSeed(c.env);
     const tree = await PageEntity.getTree(c.env);
     return ok(c, tree);
   });
-  // GET PUBLIC PAGE
-  app.get('/api/public/pages/:id', async (c) => {
+  app.get('/api/databases/:id/rows', async (c) => {
     const id = c.req.param('id');
-    const page = new PageEntity(c.env, id);
-    if (!await page.exists()) return notFound(c, 'Page not found');
-    const state = await page.getState();
-    if (!state.isPublic) return c.json({ success: false, error: 'This page is private' }, 403);
-    return ok(c, state);
+    const { items } = await PageEntity.list(c.env);
+    const rows = items.filter(p => p.parentId === id);
+    return ok(c, rows);
   });
-  // GET FULL PAGE
   app.get('/api/pages/:id', async (c) => {
     const id = c.req.param('id');
     const page = new PageEntity(c.env, id);
     if (!await page.exists()) return notFound(c, 'Page not found');
     return ok(c, await page.getState());
   });
-  // CREATE PAGE
   app.post('/api/pages', async (c) => {
     const body = await c.req.json();
     const id = body.id || crypto.randomUUID();
+    const type = body.type || 'page';
     const pageData = {
       id,
+      type,
       title: body.title || "Untitled",
       parentId: body.parentId || null,
-      blocks: body.blocks || [{ id: crypto.randomUUID(), type: 'text', content: '' }],
+      blocks: body.blocks || (type === 'page' ? [{ id: crypto.randomUUID(), type: 'text', content: '' }] : []),
+      propertiesSchema: body.propertiesSchema || (type === 'database' ? [{ id: 'p1', name: 'Status', type: 'select', options: [] }] : undefined),
+      views: body.views || (type === 'database' ? [{ id: 'v1', name: 'Table', type: 'table' }] : undefined),
+      properties: body.properties || {},
       isPublic: false,
       createdAt: Date.now(),
       updatedAt: Date.now()
@@ -41,20 +40,17 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const created = await PageEntity.create(c.env, pageData);
     return ok(c, created);
   });
-  // UPDATE PAGE
   app.put('/api/pages/:id', async (c) => {
     const id = c.req.param('id');
     const body = await c.req.json();
     const page = new PageEntity(c.env, id);
     if (!await page.exists()) return notFound(c, 'Page not found');
-    // Support partial updates including isPublic
     return ok(c, await page.mutate(s => ({
       ...s,
       ...body,
       updatedAt: Date.now()
     })));
   });
-  // DELETE PAGE
   app.delete('/api/pages/:id', async (c) => {
     const id = c.req.param('id');
     const deleted = await PageEntity.delete(c.env, id);

@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus, FileText, ChevronRight, Search, Settings, MoreHorizontal, Trash2 } from "lucide-react";
+import { Plus, FileText, ChevronRight, Search, Settings, Trash2, Table as DatabaseIcon } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
@@ -27,9 +27,9 @@ export function AppSidebar(): JSX.Element {
     queryFn: () => api<PageMetadata[]>('/api/pages'),
   });
   const createPage = useMutation({
-    mutationFn: () => api<PageMetadata>('/api/pages', { 
-      method: 'POST', 
-      body: JSON.stringify({ title: 'Untitled', parentId: null }) 
+    mutationFn: (type: 'page' | 'database' = 'page') => api<PageMetadata>('/api/pages', {
+      method: 'POST',
+      body: JSON.stringify({ title: 'Untitled', parentId: null, type })
     }),
     onSuccess: (newPage) => {
       queryClient.invalidateQueries({ queryKey: ['pages', 'tree'] });
@@ -55,11 +55,11 @@ export function AppSidebar(): JSX.Element {
         <SidebarGroup>
           <div className="flex items-center justify-between px-2 mb-2">
             <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Workspace</SidebarGroupLabel>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="size-5 hover:bg-zinc-200"
-              onClick={() => createPage.mutate()}
+              onClick={() => createPage.mutate('page')}
             >
               <Plus className="size-3.5" />
             </Button>
@@ -94,11 +94,12 @@ function PageTreeItem({ page, pages, activeId }: { page: PageMetadata; pages: Pa
   const children = pages.filter(p => p.parentId === page.id);
   const isActive = activeId === page.id;
   const [isOpen, setIsOpen] = React.useState(false);
+  const Icon = page.type === 'database' ? DatabaseIcon : FileText;
   return (
     <SidebarMenuItem>
       <div className="group flex items-center">
-        <SidebarMenuButton 
-          asChild 
+        <SidebarMenuButton
+          asChild
           isActive={isActive}
           className={cn(
             "flex-1 transition-colors",
@@ -106,7 +107,7 @@ function PageTreeItem({ page, pages, activeId }: { page: PageMetadata; pages: Pa
           )}
         >
           <Link to={`/p/${page.id}`} className="flex items-center gap-2">
-            <button 
+            <button
               onClick={(e) => {
                 e.preventDefault();
                 setIsOpen(!isOpen);
@@ -119,7 +120,7 @@ function PageTreeItem({ page, pages, activeId }: { page: PageMetadata; pages: Pa
             >
               <ChevronRight className="size-3" />
             </button>
-            <FileText className="size-4 text-zinc-500" />
+            <Icon className="size-4 text-zinc-500" />
             <span className="truncate">{page.title || "Untitled"}</span>
           </Link>
         </SidebarMenuButton>
