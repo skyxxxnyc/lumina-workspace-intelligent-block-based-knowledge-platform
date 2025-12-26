@@ -3,6 +3,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "./AppHeader";
 import { SearchCommand } from "@/components/search-command";
+import { cn } from "@/lib/utils";
 type AppLayoutProps = {
   children: React.ReactNode;
   container?: boolean;
@@ -13,9 +14,9 @@ export function AppLayout({ children, container = false, className, contentClass
   return (
     <div className="flex min-h-screen w-full bg-background overflow-hidden">
       <AppSidebar />
-      <SidebarInset className={className}>
-        <div className="absolute left-2 top-2 z-40">
-          <SidebarTrigger />
+      <SidebarInset className={cn("relative flex flex-col min-w-0", className)}>
+        <div className="absolute left-2 top-2 z-40 pointer-events-none md:pointer-events-auto">
+          <SidebarTrigger className="pointer-events-auto" />
         </div>
         <AppHeader />
         <main className="flex-1 relative overflow-y-auto">
@@ -31,7 +32,4 @@ export function AppLayout({ children, container = false, className, contentClass
       <SearchCommand />
     </div>
   );
-}
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(" ");
 }

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PropertySchema, PropertyOption } from '@shared/types';
-import { cn } from '@/lib/utils';
+import { cn, getColorClass } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -56,7 +56,13 @@ export function PropertyCell({ property, value, onChange, className }: PropertyC
             <PopoverTrigger asChild>
               <button className="flex items-center px-3 py-2 w-full h-full text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left overflow-hidden">
                 {selectedOption ? (
-                  <Badge variant="secondary" className="text-[10px] font-medium uppercase tracking-tight truncate">
+                  <Badge 
+                    variant="secondary" 
+                    className={cn(
+                      "text-[10px] font-bold uppercase tracking-tight truncate border-none",
+                      getColorClass(selectedOption.color, 'badge')
+                    )}
+                  >
                     {selectedOption.label}
                   </Badge>
                 ) : (
@@ -79,8 +85,13 @@ export function PropertyCell({ property, value, onChange, className }: PropertyC
                         }}
                         className="flex items-center justify-between"
                       >
-                        <Badge variant="secondary" className="text-xs font-normal">{opt.label}</Badge>
-                        {value === opt.id && <Check className="size-3.5" />}
+                        <Badge 
+                          variant="secondary" 
+                          className={cn("text-xs font-normal border-none", getColorClass(opt.color, 'badge'))}
+                        >
+                          {opt.label}
+                        </Badge>
+                        {value === opt.id && <Check className="size-3.5 text-primary" />}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -99,7 +110,14 @@ export function PropertyCell({ property, value, onChange, className }: PropertyC
               <button className="flex items-center flex-wrap gap-1 px-3 py-1.5 w-full h-full text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors text-left overflow-hidden min-h-[40px]">
                 {selectedOptions.length > 0 ? (
                   selectedOptions.map(opt => (
-                    <Badge key={opt.id} variant="secondary" className="text-[10px] font-medium uppercase tracking-tight h-5">
+                    <Badge 
+                      key={opt.id} 
+                      variant="secondary" 
+                      className={cn(
+                        "text-[10px] font-bold uppercase tracking-tight h-5 border-none",
+                        getColorClass(opt.color, 'badge')
+                      )}
+                    >
                       {opt.label}
                     </Badge>
                   ))
@@ -120,15 +138,20 @@ export function PropertyCell({ property, value, onChange, className }: PropertyC
                         <CommandItem
                           key={opt.id}
                           onSelect={() => {
-                            const next = isSelected 
+                            const next = isSelected
                               ? values.filter(v => v !== opt.id)
                               : [...values, opt.id];
                             onChange(next);
                           }}
                           className="flex items-center justify-between"
                         >
-                          <Badge variant="secondary" className="text-xs font-normal">{opt.label}</Badge>
-                          {isSelected && <Check className="size-3.5" />}
+                          <Badge 
+                            variant="secondary" 
+                            className={cn("text-xs font-normal border-none", getColorClass(opt.color, 'badge'))}
+                          >
+                            {opt.label}
+                          </Badge>
+                          {isSelected && <Check className="size-3.5 text-primary" />}
                         </CommandItem>
                       );
                     })}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Page, PropertySchema } from '@shared/types';
-import { cn } from '@/lib/utils';
+import { cn, getColorClass } from '@/lib/utils';
 import { FileText, Plus, MoreHorizontal, LayoutPanelTop } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
@@ -35,11 +35,11 @@ export function BoardView({ database, rows, onUpdateRow, onCreateRow }: BoardVie
           <div key={col.id || 'null'} className="flex-shrink-0 w-72 flex flex-col gap-4">
             <div className="flex items-center justify-between px-1.5 py-1">
               <div className="flex items-center gap-2.5">
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={cn(
                     "text-[10px] font-bold uppercase tracking-wider border-none px-2 h-6 flex items-center shadow-sm",
-                    `bg-${col.color || 'gray'}-100 dark:bg-${col.color || 'gray'}-900/50 text-${col.color || 'gray'}-700 dark:text-${col.color || 'gray'}-300`
+                    getColorClass(col.color, 'badge')
                   )}
                 >
                   {col.label}
@@ -85,7 +85,7 @@ export function BoardView({ database, rows, onUpdateRow, onCreateRow }: BoardVie
               </button>
               {columnRows.length === 0 && (
                 <div className="h-20 border-2 border-dashed border-zinc-100 dark:border-zinc-900 rounded-xl flex items-center justify-center opacity-30">
-                  <span className="text-[10px] font-medium uppercase tracking-widest">Empty</span>
+                  <span className="text-[10px] font-medium uppercase tracking-widest text-zinc-400">Empty</span>
                 </div>
               )}
             </div>

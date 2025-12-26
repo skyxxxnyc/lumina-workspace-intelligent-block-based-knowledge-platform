@@ -18,6 +18,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const tree = await PageEntity.getTree(c.env);
     return ok(c, tree);
   });
+  app.get('/api/pages/export', async (c) => {
+    const { items } = await PageEntity.list(c.env);
+    // Return full page objects including blocks for backup
+    return ok(c, items.filter(p => !p.deletedAt));
+  });
   app.get('/api/search', async (c) => {
     const { items } = await PageEntity.list(c.env);
     const searchData = items
@@ -36,7 +41,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const page = new PageEntity(c.env, id);
     if (!await page.exists()) return notFound(c, 'Page not found');
     const state = await page.getState();
-    if (!state.isPublic || state.deletedAt) return bad(c, 'This page is not public');
+    if (!state.isPublic || !!state.deletedAt) return bad(c, 'This page is not public or has been deleted');
     return ok(c, state);
   });
   app.get('/api/trash', async (c) => {
@@ -110,6 +115,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const { pages } = await c.req.json();
     if (!Array.isArray(pages)) return bad(c, 'Invalid payload');
     for (const p of pages) {
+      // Use create to ensure index is updated
       await PageEntity.create(c.env, p);
     }
     return ok(c, { imported: pages.length });
