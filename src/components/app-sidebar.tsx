@@ -3,7 +3,7 @@ import { Plus, FileText, ChevronRight, Search, Settings, Trash2, Table as Databa
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
-import { PageMetadata } from "@shared/types";
+import { PageMetadata, Workspace } from "@shared/types";
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
@@ -18,13 +18,22 @@ import {
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 export function AppSidebar(): JSX.Element {
   const navigate = useNavigate();
   const { pageId } = useParams();
   const queryClient = useQueryClient();
+  const { data: workspace } = useQuery<Workspace>({
+    queryKey: ['workspace'],
+    queryFn: () => api<Workspace>('/api/workspace'),
+  });
   const { data: pages = [] } = useQuery<PageMetadata[]>({
     queryKey: ['pages', 'tree'],
     queryFn: () => api<PageMetadata[]>('/api/pages'),
+  });
+  const { data: trash = [] } = useQuery<PageMetadata[]>({
+    queryKey: ['trash'],
+    queryFn: () => api<PageMetadata[]>('/api/trash'),
   });
   const createPage = useMutation({
     mutationFn: ({ type = 'page', parentId = null }: { type?: 'page' | 'database', parentId?: string | null } = {}) =>
@@ -43,8 +52,15 @@ export function AppSidebar(): JSX.Element {
       <SidebarHeader className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="size-6 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-[10px] text-white dark:text-zinc-900 font-bold">L</div>
-            <span className="font-semibold text-sm tracking-tight text-foreground">Lumina</span>
+            <div className={cn(
+              "size-6 rounded flex items-center justify-center text-[10px] text-white font-bold",
+              workspace?.color === 'blue' ? 'bg-blue-600' : 'bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900'
+            )}>
+              {workspace?.icon || "L"}
+            </div>
+            <span className="font-semibold text-sm tracking-tight text-foreground truncate max-w-[140px]">
+              {workspace?.name || "Lumina"}
+            </span>
           </div>
         </div>
         <div className="relative">
@@ -68,12 +84,12 @@ export function AppSidebar(): JSX.Element {
           </div>
           <SidebarMenu className="px-2">
             {rootPages.map((page) => (
-              <PageTreeItem 
-                key={page.id} 
-                page={page} 
-                pages={pages} 
-                activeId={pageId} 
-                onCreateSubPage={(pid) => createPage.mutate({ parentId: pid })} 
+              <PageTreeItem
+                key={page.id}
+                page={page}
+                pages={pages}
+                activeId={pageId}
+                onCreateSubPage={(pid) => createPage.mutate({ parentId: pid })}
               />
             ))}
             {rootPages.length === 0 && (
@@ -90,15 +106,24 @@ export function AppSidebar(): JSX.Element {
       <SidebarFooter className="p-4 border-t border-zinc-200 dark:border-zinc-800">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="text-zinc-500 hover:text-foreground text-xs gap-3">
-              <Settings className="size-4" />
-              <span>Settings</span>
+            <SidebarMenuButton asChild className="text-zinc-500 hover:text-foreground text-xs gap-3">
+              <Link to="/settings">
+                <Settings className="size-4" />
+                <span>Settings</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton className="text-zinc-500 hover:text-foreground text-xs gap-3">
-              <Trash2 className="size-4" />
-              <span>Trash</span>
+            <SidebarMenuButton asChild className="text-zinc-500 hover:text-foreground text-xs gap-3">
+              <Link to="/settings?tab=trash">
+                <Trash2 className="size-4" />
+                <span>Trash</span>
+                {trash.length > 0 && (
+                  <Badge variant="secondary" className="ml-auto text-[9px] h-4 px-1 min-w-[16px] flex items-center justify-center">
+                    {trash.length}
+                  </Badge>
+                )}
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

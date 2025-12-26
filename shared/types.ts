@@ -54,10 +54,11 @@ export interface Page {
   blocks: Block[];
   propertiesSchema?: PropertySchema[];
   views?: DatabaseView[];
-  properties?: Record<string, any>; // For row items
+  properties?: Record<string, any>;
   isPublic?: boolean;
   createdAt: number;
   updatedAt: number;
+  deletedAt?: number;
 }
 export interface PageMetadata {
   id: string;
@@ -66,6 +67,27 @@ export interface PageMetadata {
   icon?: string;
   parentId: string | null;
   isPublic?: boolean;
+  deletedAt?: number;
+}
+export interface Workspace {
+  id: string;
+  name: string;
+  icon?: string;
+  color?: string;
+  preferences: {
+    theme: 'light' | 'dark' | 'system';
+    language: string;
+    notifications: {
+      emailUpdates: boolean;
+      pageViews: boolean;
+    };
+  };
+  privacy: {
+    publicByDefault: boolean;
+    showActivity: boolean;
+  };
+  createdAt: number;
+  updatedAt: number;
 }
 export interface User {
   id: string;

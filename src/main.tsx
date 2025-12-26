@@ -15,6 +15,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import '@/index.css'
 import { HomePage } from '@/pages/HomePage'
 import { PublicPage } from '@/pages/PublicPage'
+import { SettingsPage } from '@/pages/SettingsPage'
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -35,6 +36,11 @@ const router = createBrowserRouter([
   {
     path: "/p/:pageId",
     element: <HomePage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/settings",
+    element: <SettingsPage />,
     errorElement: <RouteErrorBoundary />,
   },
   {

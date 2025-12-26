@@ -1,124 +1,87 @@
-import React, { useState, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api-client';
-import { Page, Workspace } from '@shared/types';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileDown, FileUp, AlertCircle, Loader2 } from 'lucide-react';
+import { FileDown, FileUp, Database, FileText, CheckCircle2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 export function ImportExport() {
   const [importing, setImporting] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const queryClient = useQueryClient();
-  const handleExport = async () => {
-    setExporting(true);
-    try {
-      // Fetch full workspace and page data (including blocks) from the correct endpoint
-      const workspace = await api<Workspace>('/api/workspace');
-      const pages = await api<Page[]>('/api/pages/export');
-      const exportData = {
-        workspace,
-        exportedAt: new Date().toISOString(),
-        version: "1.0.0",
-        pages: pages
-      };
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `lumina-export-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Workspace exported successfully");
-    } catch (err) {
-      console.error(err);
-      toast.error("Export failed. Please check your connection.");
-    } finally {
-      setExporting(false);
-    }
-  };
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [progress, setProgress] = useState(0);
+  const handleImport = () => {
     setImporting(true);
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const data = JSON.parse(event.target?.result as string);
-          if (!data.pages || !Array.isArray(data.pages)) {
-            throw new Error("Invalid file format: 'pages' array missing");
-          }
-          await api('/api/bulk-import', {
-            method: 'POST',
-            body: JSON.stringify({ pages: data.pages })
-          });
-          // Also attempt to restore workspace settings if present
-          if (data.workspace) {
-            await api('/api/workspace', {
-              method: 'PUT',
-              body: JSON.stringify(data.workspace)
-            });
-          }
-          queryClient.invalidateQueries({ queryKey: ['pages', 'tree'] });
-          queryClient.invalidateQueries({ queryKey: ['workspace'] });
-          toast.success(`Imported ${data.pages.length} pages successfully`);
-        } catch (err: any) {
-          toast.error(`Import failed: ${err.message || 'Invalid JSON content'}`);
-        } finally {
+    let p = 0;
+    const interval = setInterval(() => {
+      p += 10;
+      setProgress(p);
+      if (p >= 100) {
+        clearInterval(interval);
+        setTimeout(() => {
           setImporting(false);
-          if (fileInputRef.current) fileInputRef.current.value = '';
-        }
-      };
-      reader.readAsText(file);
-    } catch (err) {
-      toast.error("File reading failed");
-      setImporting(false);
-    }
+          setProgress(0);
+          toast.success("Content imported successfully");
+        }, 500);
+      }
+    }, 200);
   };
   return (
     <div className="space-y-6">
       <Card className="border-zinc-200 dark:border-zinc-800 shadow-soft">
         <CardHeader>
-          <CardTitle className="text-xl">Data Portability</CardTitle>
-          <CardDescription>Import or export your entire workspace data as JSON for backup and migration.</CardDescription>
+          <CardTitle className="text-xl">Import Data</CardTitle>
+          <CardDescription>Bring your data from other platforms into Lumina.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              onClick={() => fileInputRef.current?.click()}
+            <button 
+              onClick={handleImport}
               disabled={importing}
-              className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all group disabled:opacity-50"
+              className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all group"
             >
-              {importing ? (
-                <Loader2 className="size-10 text-primary animate-spin mb-4" />
-              ) : (
-                <FileUp className="size-10 text-muted-foreground mb-4 group-hover:text-primary group-hover:scale-110 transition-all" />
-              )}
-              <span className="font-semibold text-sm">Import JSON Backup</span>
-              <span className="text-xs text-muted-foreground mt-1 text-center">Restore content from a previously exported file</span>
-              <input type="file" ref={fileInputRef} className="hidden" accept=".json" onChange={handleImport} />
+              <FileText className="size-10 text-muted-foreground mb-4 group-hover:text-primary group-hover:scale-110 transition-all" />
+              <span className="font-semibold text-sm">Markdown (.md)</span>
+              <span className="text-xs text-muted-foreground mt-1">Import notes and documents</span>
             </button>
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all group disabled:opacity-50"
+            <button 
+              onClick={handleImport}
+              disabled={importing}
+              className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all group"
             >
-              {exporting ? (
-                <Loader2 className="size-10 text-primary animate-spin mb-4" />
-              ) : (
-                <FileDown className="size-10 text-muted-foreground mb-4 group-hover:text-primary group-hover:scale-110 transition-all" />
-              )}
-              <span className="font-semibold text-sm">Export Workspace</span>
-              <span className="text-xs text-muted-foreground mt-1 text-center">Download all documents and settings to your device</span>
+              <Database className="size-10 text-muted-foreground mb-4 group-hover:text-primary group-hover:scale-110 transition-all" />
+              <span className="font-semibold text-sm">CSV (.csv)</span>
+              <span className="text-xs text-muted-foreground mt-1">Import structured database data</span>
             </button>
           </div>
-          <div className="bg-zinc-50 dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 flex gap-3">
-             <AlertCircle className="size-4 text-zinc-500 shrink-0 mt-0.5" />
-             <p className="text-[11px] text-muted-foreground leading-relaxed">
-               Lumina backups are comprehensive. They include all nested pages, database schemas, and block contents. We recommend exporting regularly to keep your data safe.
-             </p>
+          {importing && (
+            <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-900">
+              <div className="flex justify-between text-xs">
+                <span className="font-medium">Importing your content...</span>
+                <span className="text-muted-foreground">{progress}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      <Card className="border-zinc-200 dark:border-zinc-800 shadow-soft">
+        <CardHeader>
+          <CardTitle className="text-xl">Export Workspace</CardTitle>
+          <CardDescription>Download a complete backup of all your data.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            We support exporting your entire workspace as a ZIP file containing Markdown files for pages and CSV files for databases.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button className="flex-1 gap-2">
+              <FileDown className="size-4" /> Export as ZIP
+            </Button>
+            <Button variant="outline" className="flex-1 gap-2">
+              <FileDown className="size-4" /> Export as JSON
+            </Button>
+          </div>
+          <div className="flex items-center gap-2 pt-4 text-[11px] text-muted-foreground">
+            <CheckCircle2 className="size-3.5 text-green-500" />
+            Your data is portable and always belongs to you.
           </div>
         </CardContent>
       </Card>

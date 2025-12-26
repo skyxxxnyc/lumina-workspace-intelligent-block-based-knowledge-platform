@@ -1,5 +1,51 @@
 import { IndexedEntity } from "./core-utils";
-import type { Page, PageMetadata } from "@shared/types";
+import type { Page, PageMetadata, Workspace } from "@shared/types";
+export class WorkspaceEntity extends IndexedEntity<Workspace> {
+  static readonly entityName = "workspace";
+  static readonly indexName = "workspaces";
+  static readonly initialState: Workspace = {
+    id: "default",
+    name: "My Workspace",
+    icon: "🏠",
+    color: "blue",
+    preferences: {
+      theme: 'system',
+      language: 'en',
+      notifications: {
+        emailUpdates: true,
+        pageViews: false
+      }
+    },
+    privacy: {
+      publicByDefault: false,
+      showActivity: true
+    },
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+  static seedData: Workspace[] = [
+    {
+      id: "default",
+      name: "My Workspace",
+      icon: "🏠",
+      color: "blue",
+      preferences: {
+        theme: 'system',
+        language: 'en',
+        notifications: {
+          emailUpdates: true,
+          pageViews: false
+        }
+      },
+      privacy: {
+        publicByDefault: false,
+        showActivity: true
+      },
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }
+  ];
+}
 export class PageEntity extends IndexedEntity<Page> {
   static readonly entityName = "page";
   static readonly indexName = "pages";
@@ -48,32 +94,40 @@ export class PageEntity extends IndexedEntity<Page> {
       views: [{ id: "v1", name: "Table View", type: "table" }],
       createdAt: Date.now(),
       updatedAt: Date.now()
-    },
-    {
-      id: "task-1",
-      type: "page",
-      title: "Design System",
-      parentId: "tasks-db",
-      blocks: [{ id: "t1b1", type: "text", content: "Start with color tokens." }],
-      properties: { "p1": "o2", "p2": "v3" },
-      createdAt: Date.now(),
-      updatedAt: Date.now()
     }
   ];
-  async updateBlocks(blocks: Page['blocks']): Promise<Page> {
-    return this.mutate(s => ({ ...s, blocks, updatedAt: Date.now() }));
+  async softDelete(): Promise<Page> {
+    return this.mutate(s => ({ ...s, deletedAt: Date.now(), updatedAt: Date.now() }));
   }
-  async updateMetadata(patch: Partial<Page>): Promise<Page> {
-    return this.mutate(s => ({ ...s, ...patch, updatedAt: Date.now() }));
+  async restore(): Promise<Page> {
+    return this.mutate(s => {
+      const { deletedAt, ...rest } = s;
+      return { ...rest, updatedAt: Date.now() } as Page;
+    });
   }
   static async getTree(env: any): Promise<PageMetadata[]> {
     const { items } = await this.list(env);
-    return items.map(p => ({
-      id: p.id,
-      type: p.type || 'page',
-      title: p.title,
-      icon: p.icon,
-      parentId: p.parentId
-    }));
+    return items
+      .filter(p => !p.deletedAt)
+      .map(p => ({
+        id: p.id,
+        type: p.type || 'page',
+        title: p.title,
+        icon: p.icon,
+        parentId: p.parentId
+      }));
+  }
+  static async getTrash(env: any): Promise<PageMetadata[]> {
+    const { items } = await this.list(env);
+    return items
+      .filter(p => !!p.deletedAt)
+      .map(p => ({
+        id: p.id,
+        type: p.type || 'page',
+        title: p.title,
+        icon: p.icon,
+        parentId: p.parentId,
+        deletedAt: p.deletedAt
+      }));
   }
 }

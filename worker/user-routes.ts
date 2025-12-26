@@ -1,24 +1,51 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { PageEntity } from "./entities";
+import { PageEntity, WorkspaceEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
+  app.get('/api/workspace', async (c) => {
+    await WorkspaceEntity.ensureSeed(c.env);
+    const ws = new WorkspaceEntity(c.env, "default");
+    return ok(c, await ws.getState());
+  });
+  app.put('/api/workspace', async (c) => {
+    const body = await c.req.json();
+    const ws = new WorkspaceEntity(c.env, "default");
+    return ok(c, await ws.mutate(s => ({ ...s, ...body, updatedAt: Date.now() })));
+  });
   app.get('/api/pages', async (c) => {
     await PageEntity.ensureSeed(c.env);
     const tree = await PageEntity.getTree(c.env);
     return ok(c, tree);
   });
+  app.get('/api/trash', async (c) => {
+    const trash = await PageEntity.getTrash(c.env);
+    return ok(c, trash);
+  });
+  app.post('/api/pages/:id/restore', async (c) => {
+    const id = c.req.param('id');
+    const page = new PageEntity(c.env, id);
+    if (!await page.exists()) return notFound(c);
+    return ok(c, await page.restore());
+  });
+  app.delete('/api/pages/:id/permanent', async (c) => {
+    const id = c.req.param('id');
+    const deleted = await PageEntity.delete(c.env, id);
+    return ok(c, { deleted });
+  });
   app.get('/api/databases/:id/rows', async (c) => {
     const id = c.req.param('id');
     const { items } = await PageEntity.list(c.env);
-    const rows = items.filter(p => p.parentId === id);
+    const rows = items.filter(p => p.parentId === id && !p.deletedAt);
     return ok(c, rows);
   });
   app.get('/api/pages/:id', async (c) => {
     const id = c.req.param('id');
     const page = new PageEntity(c.env, id);
     if (!await page.exists()) return notFound(c, 'Page not found');
-    return ok(c, await page.getState());
+    const state = await page.getState();
+    if (state.deletedAt) return bad(c, 'Page is in trash');
+    return ok(c, state);
   });
   app.post('/api/pages', async (c) => {
     const body = await c.req.json();
@@ -53,7 +80,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.delete('/api/pages/:id', async (c) => {
     const id = c.req.param('id');
-    const deleted = await PageEntity.delete(c.env, id);
-    return ok(c, { deleted });
+    const page = new PageEntity(c.env, id);
+    if (!await page.exists()) return notFound(c);
+    await page.softDelete();
+    return ok(c, { success: true });
+  });
+  app.post('/api/import', async (c) => {
+    return ok(c, { message: "Import successful (mocked)" });
+  });
+  app.post('/api/export', async (c) => {
+    return ok(c, { url: "#", message: "Export ready (mocked)" });
   });
 }
