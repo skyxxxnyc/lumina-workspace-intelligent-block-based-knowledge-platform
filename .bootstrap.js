@@ -79,7 +79,8 @@ function updateWranglerJsonc() {
 function runSetupCommands() {
     const commands = [
     "bun add react-textarea-autosize@^8.5.4",
-    "bun install lodash-es"
+    "bun install lodash-es",
+    "bun add @types/uuid"
 ];
     
     if (commands.length === 0) {
